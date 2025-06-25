@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en" >
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Campus Map with Skills Sidebar</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div id="appContainer">
+    <!-- Sidebar -->
+    <aside id="sidebar">
+      <h2>Skills</h2>
+      <div id="skillsContent">
+        <p>Level: <span id="skillLevel">1</span></p>
+        <p>XP: <span id="skillXP">0</span></p>
+        <div class="skill">
+          <span>Hacking</span>
+          <button data-skill="hacking">Upgrade</button>
+        </div>
+        <div class="skill">
+          <span>Stealth</span>
+          <button data-skill="stealth">Upgrade</button>
+        </div>
+        <div class="skill">
+          <span>Speed</span>
+          <button data-skill="speed">Upgrade</button>
+        </div>
+      </div>
+      <button id="closeSidebarBtn" aria-label="Close skills panel">×</button>
+    </aside>
+
+    <!-- Main Game Container -->
+    <main id="gameWrapper">
+      <button id="toggleSidebarBtn" aria-label="Toggle skills panel">Skills ⚔️</button>
+      <div id="gameContainer"></div>
+      <div id="banner"></div>
+    </main>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser.min.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>

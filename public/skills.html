@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Player Skills</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    body {
+      font-family: 'Noto Sans', sans-serif;
+      background: linear-gradient(135deg, #e0e5f3, #f4f5f7);
+      color: #333;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2rem;
+      min-height: 100vh;
+    }
+    h1 {
+      margin-bottom: 1rem;
+      font-style: italic;
+    }
+    #stats {
+      margin-bottom: 2rem;
+      font-size: 1.2rem;
+    }
+    .skill {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 6px 10px rgba(0,0,0,0.1);
+      padding: 1rem 1.5rem;
+      margin: 0.5rem 0;
+      width: 300px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .skill button {
+      background: #7487a3;
+      border: none;
+      color: white;
+      padding: 0.4rem 1rem;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+    .skill button:hover {
+      background: #5a6a7a;
+    }
+    #backBtn {
+      margin-top: 3rem;
+      padding: 0.8rem 1.8rem;
+      border: none;
+      border-radius: 12px;
+      background: #7487a3;
+      color: white;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+    #backBtn:hover {
+      background: #5a6a7a;
+    }
+  </style>
+</head>
+<body>
+  <h1>Your Skills & Progression</h1>
+  <div id="stats">Level: <span id="level">1</span> | XP: <span id="xp">0</span></div>
+
+  <div class="skill">
+    <span>Hacking Skill</span>
+    <button data-skill="hacking">Upgrade</button>
+  </div>
+  <div class="skill">
+    <span>Stealth</span>
+    <button data-skill="stealth">Upgrade</button>
+  </div>
+  <div class="skill">
+    <span>Speed</span>
+    <button data-skill="speed">Upgrade</button>
+  </div>
+
+  <button id="backBtn">Back to Campus</button>
+
+  <script>
+    let level = parseInt(localStorage.getItem('level')) || 1;
+    let xp = parseInt(localStorage.getItem('xp')) || 0;
+
+    const skills = {
+      hacking: parseInt(localStorage.getItem('skill_hacking')) || 0,
+      stealth: parseInt(localStorage.getItem('skill_stealth')) || 0,
+      speed: parseInt(localStorage.getItem('skill_speed')) || 0,
+    };
+
+    function updateDisplay() {
+      document.getElementById('level').textContent = level;
+      document.getElementById('xp').textContent = xp;
+      for (const skillName in skills) {
+        const btn = document.querySelector(`button[data-skill="${skillName}"]`);
+        btn.textContent = `Upgrade (${skills[skillName]})`;
+      }
+    }
+
+    updateDisplay();
+
+    document.querySelectorAll('.skill button').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const skill = btn.getAttribute('data-skill');
+        const cost = (skills[skill] + 1) * 10; // cost scales with level
+        if (xp >= cost) {
+          xp -= cost;
+          skills[skill]++;
+          localStorage.setItem(`skill_${skill}`, skills[skill]);
+          localStorage.setItem('xp', xp);
+          updateDisplay();
+          alert(`Upgraded ${skill}!`);
+        } else {
+          alert('Not enough XP!');
+        }
+      });
+    });
+
+    document.getElementById('backBtn').addEventListener('click', () => {
+      window.location.href = 'game.html';
+    });
+  </script>
+</body>
+</html>

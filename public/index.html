@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Campus Adventure</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&display=swap"
+    rel="stylesheet"
+  />
+  <style>
+    body {
+      margin: 0;
+      background: linear-gradient(120deg, #2c3e50, #4ca1af);
+      font-family: 'Orbitron', monospace;
+      overflow: hidden;
+      color: #f0e68c;
+      user-select: none;
+    }
+    #gameContainer {
+      position: relative;
+      width: 1200px;
+      height: 900px;
+      margin: 20px auto;
+      border: 4px solid #bba34f;
+      border-radius: 12px;
+      background: #1c2c2b;
+      box-shadow: 0 0 30px #bba34faa;
+      overflow: hidden;
+    }
+    canvas {
+      display: block;
+      margin: 0 auto;
+      background: transparent !important;
+    }
+    #banner {
+      position: absolute;
+      top: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(187, 163, 79, 0.4);
+      padding: 10px 24px;
+      border-radius: 12px;
+      font-size: 1.4rem;
+      font-weight: 700;
+      text-shadow: 0 0 5px #bba34f;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.5s ease;
+      z-index: 9999;
+    }
+    #banner.show {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    #statusBar {
+      position: fixed;
+      top: 15px;
+      right: 20px;
+      background: rgba(50, 50, 50, 0.85);
+      color: #f0e68c;
+      font-weight: 700;
+      font-size: 1.3rem;
+      padding: 8px 16px;
+      border-radius: 10px;
+      font-family: 'Orbitron', monospace;
+      box-shadow: 0 0 15px #bba34fcc;
+      user-select: none;
+      z-index: 9999;
+      min-width: 110px;
+      text-align: center;
+    }
+    #missionModal {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0, 0, 0, 0.85);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 10000;
+      font-family: 'Orbitron', monospace;
+    }
+    #missionModal.hidden {
+      display: none;
+    }
+    #modalContent {
+      background: #2a2a2a;
+      border-radius: 14px;
+      padding: 24px 32px;
+      width: 360px;
+      color: #f0e68c;
+      box-shadow: 0 0 20px #bba34f;
+      text-align: center;
+      user-select: text;
+    }
+    #modalContent h2 {
+      margin-top: 0;
+      font-size: 2rem;
+      margin-bottom: 12px;
+      color: #d1b553;
+      text-shadow: 0 0 10px #bba34f;
+    }
+    #modalContent p {
+      font-size: 1.1rem;
+      line-height: 1.4;
+      margin-bottom: 20px;
+      color: #e3d884;
+      min-height: 60px;
+    }
+    #modalContent button {
+      background: #bba34f;
+      color: #222;
+      border: none;
+      border-radius: 10px;
+      padding: 10px 22px;
+      font-weight: 700;
+      font-size: 1.1rem;
+      margin: 0 10px;
+      cursor: pointer;
+      box-shadow: 0 0 12px #bba34faa;
+      transition: background 0.3s ease;
+      font-family: 'Orbitron', monospace;
+    }
+    #modalContent button:hover {
+      background: #d1be58;
+    }
+  </style>
+</head>
+<body>
+  <div id="gameContainer"></div>
+  <div id="banner"></div>
+  <div id="statusBar">XP: <span id="xpDisplay">0</span></div>
+
+  <div id="missionModal" class="hidden">
+    <div id="modalContent">
+      <h2 id="missionTitle"></h2>
+      <p id="missionDescription"></p>
+      <button id="startMissionBtn">Start Mission</button>
+      <button id="closeMissionBtn">Close</button>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser.min.js"></script>
+  <script>
+    const config = {
+      type: Phaser.AUTO,
+      width: 1200,
+      height: 900,
+      parent: 'gameContainer',
+      physics: {
+        default: 'arcade',
+        arcade: { gravity: { y: 0 }, debug: false }
+      },
+      scene: {
+        preload,
+        create,
+        update
+      }
+    };
+
+    let player;
+    let cursors;
+    let buildings = [];
+    let banner;
+    let bannerTimeout;
+    let camera;
+    let dragging = false;
+    let dragStart = null;
+    const SPEED = 220;
+    const worldWidth = 2400;
+    const worldHeight = 1800;
+    let xp = 0;
+    const game = new Phaser.Game(config);
+
+    function preload() {}
+
+    function create() {
+      const scene = this;
+      camera = scene.cameras.main;
+      scene.physics.world.setBounds(0, 0, worldWidth, worldHeight);
+      camera.setBounds(0, 0, worldWidth, worldHeight);
+
+      const tileSize = 40;
+      const graphics = scene.add.graphics();
+      for (let x = 0; x < worldWidth; x += tileSize) {
+        for (let y = 0; y < worldHeight; y += tileSize) {
+          const shade = (x / tileSize + y / tileSize) % 2 === 0 ? 0x9dbf9e : 0x82a97b;
+          graphics.fillStyle(shade, 1);
+          graphics.fillRect(x, y, tileSize, tileSize);
+        }
+      }
+
+      graphics.fillStyle(0x6b705c, 1);
+      graphics.fillRect(500, 0, 160, worldHeight);
+      graphics.fillRect(0, 860, worldWidth, 160);
+
+      addBuilding(scene, 400, 300, 280, 180, 0xa97c50, 'Main Hall', 'Welcome to the Main Hall mission. Solve puzzles to advance.');
+      addBuilding(scene, 800, 300, 220, 220, 0x886633, 'Library', 'Find the secret knowledge hidden in the Library.');
+      addBuilding(scene, 400, 1300, 320, 240, 0x7f5f3f, 'Cafeteria', 'Help prepare meals and gather supplies.');
+      addBuilding(scene, 1300, 860, 440, 280, 0x6b4f2f, 'Gymnasium', 'Complete physical challenges and train your skills.');
+
+      player = scene.add.circle(560, 940, 26, 0xd6b45b);
+      scene.physics.add.existing(player);
+      player.body.setCollideWorldBounds(true);
+      player.body.setBoundsRectangle(new Phaser.Geom.Rectangle(0, 0, worldWidth, worldHeight));
+
+      cursors = scene.input.keyboard.createCursorKeys();
+      banner = document.getElementById('banner');
+
+      scene.input.on('pointerdown', pointer => {
+        dragging = true;
+        dragStart = { x: pointer.x, y: pointer.y };
+      });
+      scene.input.on('pointerup', () => {
+        dragging = false;
+        dragStart = null;
+      });
+      scene.input.on('pointermove', pointer => {
+        if (!dragging) return;
+        const dragX = dragStart.x - pointer.x;
+        const dragY = dragStart.y - pointer.y;
+        dragStart = { x: pointer.x, y: pointer.y };
+        camera.scrollX += dragX;
+        camera.scrollY += dragY;
+        camera.scrollX = Phaser.Math.Clamp(camera.scrollX, 0, worldWidth - config.width);
+        camera.scrollY = Phaser.Math.Clamp(camera.scrollY, 0, worldHeight - config.height);
+      });
+
+      camera.startFollow(player, true, 0.1, 0.1);
+
+      window.missionModal = document.getElementById('missionModal');
+      window.missionTitle = document.getElementById('missionTitle');
+      window.missionDescription = document.getElementById('missionDescription');
+      window.startMissionBtn = document.getElementById('startMissionBtn');
+      window.closeMissionBtn = document.getElementById('closeMissionBtn');
+      window.xpDisplay = document.getElementById('xpDisplay');
+
+      closeMissionBtn.addEventListener('click', () => {
+        missionModal.classList.add('hidden');
+      });
+      startMissionBtn.addEventListener('click', () => {
+        xp += 20;
+        updateXPDisplay();
+        missionModal.classList.add('hidden');
+        showBanner('Mission Completed! +20 XP');
+      });
+
+      updateXPDisplay();
+    }
+
+    function update() {
+      let vx = 0;
+      let vy = 0;
+      if (cursors.left.isDown) vx = -SPEED;
+      else if (cursors.right.isDown) vx = SPEED;
+      if (cursors.up.isDown) vy = -SPEED;
+      else if (cursors.down.isDown) vy = SPEED;
+      player.body.setVelocity(vx, vy);
+
+      buildings.forEach(({ rect, name }) => {
+        const dx = player.x - rect.x;
+        const dy = player.y - rect.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist < 100) showBanner(`Near ${name}`);
+      });
+    }
+
+    function addBuilding(scene, x, y, w, h, color, name, missionText) {
+      const rect = scene.add.rectangle(x + w / 2, y + h / 2, w, h, color);
+      rect.setStrokeStyle(3, 0x5a4a30);
+      rect.setInteractive();
+      rect.name = name;
+      rect.missionText = missionText;
+      buildings.push({ rect, name, missionText });
+      rect.on('pointerdown', () => {
+        openMissionModal(name, missionText);
+      });
+    }
+
+    function openMissionModal(name, missionText) {
+      missionTitle.textContent = name;
+      missionDescription.textContent = missionText;
+      missionModal.classList.remove('hidden');
+    }
+
+    function showBanner(text) {
+      banner.textContent = text;
+      banner.classList.add('show');
+      clearTimeout(bannerTimeout);
+      bannerTimeout = setTimeout(() => banner.classList.remove('show'), 3000);
+    }
+
+    function updateXPDisplay() {
+      xpDisplay.textContent = xp;
+    }
+  </script>
+</body>
+</html>
