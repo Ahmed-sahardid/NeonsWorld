@@ -1,0 +1,76 @@
+<!-- hackschool.html -->
+<!DOCTYPE html>
+<html>
+<head>
+  <title>NEON'S World - Hackschool</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="center-box">
+    <h1>🧠 Hackschool</h1>
+
+    <div id="player-info"></div>
+
+    <div class="professor-message">
+      <p>Welcome to Hackschool, <span id="player-path"></span>!</p>
+      <p>Your first mission: <strong>Crack the simple code puzzle</strong>.</p>
+      <p>Solve the puzzle to gain XP and level up!</p>
+    </div>
+
+    <div class="mission">
+      <label for="code-input">Enter the secret code:</label>
+      <input type="text" id="code-input" placeholder="Hint: neon" />
+      <button id="submit-code">Submit</button>
+    </div>
+
+    <div id="feedback"></div>
+
+    <button id="back-btn">Back to Campus</button>
+  </div>
+
+  <script src="js/player.js"></script>
+  <script>
+    // Show player info
+    const path = localStorage.getItem('path') || 'Unknown';
+    const difficulty = localStorage.getItem('difficulty') || 'Easy';
+    let xp = parseInt(localStorage.getItem('xp') || '0');
+    let level = parseInt(localStorage.getItem('level') || '1');
+
+    document.getElementById('player-info').textContent = `Path: ${path} | Difficulty: ${difficulty} | XP: ${xp} | Level: ${level}`;
+    document.getElementById('player-path').textContent = path;
+
+    const secretCode = "neon";  // simple puzzle code
+
+    document.getElementById('submit-code').onclick = () => {
+      const input = document.getElementById('code-input').value.trim().toLowerCase();
+      const feedback = document.getElementById('feedback');
+
+      if (input === secretCode) {
+        // Award XP depending on difficulty
+        let xpGain = 10;
+        if (difficulty === "Medium") xpGain = 20;
+        else if (difficulty === "Hard") xpGain = 30;
+
+        xp += xpGain;
+        localStorage.setItem('xp', xp);
+
+        // Level up every 50 XP
+        if (xp >= level * 50) {
+          level++;
+          localStorage.setItem('level', level);
+          feedback.innerHTML = `<p class="success">Correct! You gained ${xpGain} XP and leveled up to ${level}! 🚀</p>`;
+        } else {
+          feedback.innerHTML = `<p class="success">Correct! You gained ${xpGain} XP. Keep going!</p>`;
+        }
+
+      } else {
+        feedback.innerHTML = `<p class="error">Incorrect code, try again.</p>`;
+      }
+    };
+
+    document.getElementById('back-btn').onclick = () => {
+      window.location.href = 'campus.html';
+    };
+  </script>
+</body>
+</html>

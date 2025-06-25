@@ -1,0 +1,54 @@
+<!-- campus.html -->
+<!DOCTYPE html>
+<html>
+<head>
+  <title>NEON'S World - Campus</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="center-box">
+    <h1>🌐 NEON'S WORLD: CAMPUS</h1>
+    <div id="player-info"></div>
+
+    <div class="campus-map">
+      <button class="building" id="hackschool-btn" title="Hackschool">🧠 Hackschool</button>
+      <button class="building" id="serverroom-btn" title="Server Room">💻 Server Room</button>
+      <button class="building" id="questboard-btn" title="Quest Board">📜 Quest Board</button>
+    </div>
+
+    <button id="logout-btn">Exit to Start</button>
+  </div>
+
+  <script>
+    // Load player data from localStorage
+    const path = localStorage.getItem('path') || 'Unknown';
+    const difficulty = localStorage.getItem('difficulty') || 'Easy';
+    const xp = localStorage.getItem('xp') || 0;
+    const level = localStorage.getItem('level') || 1;
+
+    const playerInfoDiv = document.getElementById('player-info');
+    playerInfoDiv.textContent = `Path: ${path} | Difficulty: ${difficulty} | XP: ${xp} | Level: ${level}`;
+
+    // Building buttons handlers
+    document.getElementById('hackschool-btn').onclick = () => {
+      window.location.href = 'hackschool.html';
+    };
+
+    document.getElementById('serverroom-btn').onclick = () => {
+      // Placeholder for server room puzzle page
+      alert('Server Room puzzle coming soon!');
+    };
+
+    document.getElementById('questboard-btn').onclick = () => {
+      // Placeholder for quest board page
+      alert('Quest Board will show available missions here!');
+    };
+
+    document.getElementById('logout-btn').onclick = () => {
+      // Clear localStorage and return to start
+      localStorage.clear();
+      window.location.href = 'index.html';
+    };
+  </script>
+</body>
+</html>
